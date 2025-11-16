@@ -1,0 +1,249 @@
+{% extends 'invoices/base.html' %}
+
+{% block title %}Dashboard - Invoice Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="h2 mb-0">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </h1>
+            <p class="text-muted mb-0">Overview of your documents and activities</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <a href="{% url 'quotation_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Quotation
+                </a>
+                <a href="{% url 'invoice_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> New Invoice
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Quotations</h6>
+                        <h2 class="mb-0">{{ stats.total_quotations }}</h2>
+                    </div>
+                    <div class="text-info">
+                        <i class="bi bi-file-earmark-text" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+                <a href="{% url 'quotation_list' %}" class="btn btn-sm btn-link p-0 mt-2">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Invoices</h6>
+                        <h2 class="mb-0">{{ stats.total_invoices }}</h2>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-receipt" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+                <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-link p-0 mt-2">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Pending Quotations</h6>
+                        <h2 class="mb-0">{{ stats.pending_quotations }}</h2>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-clock-history" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+                <a href="{% url 'quotation_list' %}?status=pending" class="btn btn-sm btn-link p-0 mt-2">
+                    Review <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Approved Invoices</h6>
+                        <h2 class="mb-0">{{ stats.approved_invoices }}</h2>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-check-circle" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-muted">Total Revenue: {{ stats.total_revenue|floatformat:2 }} MRU</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Documents -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history"></i> Recent Documents
+        </h5>
+        <div class="btn-group btn-group-sm" role="group">
+            <a href="{% url 'quotation_list' %}" class="btn btn-outline-primary">All Quotations</a>
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-success">All Invoices</a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if recent_documents %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Reference</th>
+                        <th>Type</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in recent_documents %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'document_detail' doc.pk %}" class="text-decoration-none fw-bold">
+                                {{ doc.reference }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if doc.document_type == 'quotation' %}info{% else %}success{% endif %}">
+                                <i class="bi bi-{% if doc.document_type == 'quotation' %}file-earmark-text{% else %}receipt{% endif %}"></i>
+                                {{ doc.get_document_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ doc.customer_name }}</td>
+                        <td>{{ doc.date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="badge badge-status
+                                {% if doc.status == 'draft' %}bg-secondary
+                                {% elif doc.status == 'pending' %}bg-warning
+                                {% elif doc.status == 'approved' %}bg-success
+                                {% elif doc.status == 'rejected' %}bg-danger
+                                {% elif doc.status == 'paid' %}bg-primary
+                                {% else %}bg-dark{% endif %}">
+                                {{ doc.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="fw-bold">{{ doc.total|floatformat:2 }} {{ doc.currency }}</td>
+                        <td class="text-end table-actions">
+                            <a href="{% url 'document_detail' doc.pk %}" class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if doc.status == 'draft' or doc.status == 'pending' %}
+                            <a href="{% url 'document_edit' doc.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'document_preview' doc.pk %}" class="btn btn-sm btn-outline-info" title="Preview" target="_blank">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-3">No documents yet. Create your first quotation or invoice!</p>
+            <div class="mt-3">
+                <a href="{% url 'quotation_create' %}" class="btn btn-primary me-2">
+                    <i class="bi bi-plus-circle"></i> Create Quotation
+                </a>
+                <a href="{% url 'invoice_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Create Invoice
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'quotation_create' %}" class="btn btn-outline-primary btn-action">
+                        <i class="bi bi-file-earmark-plus"></i> Create New Quotation
+                    </a>
+                    <a href="{% url 'invoice_create' %}" class="btn btn-outline-success btn-action">
+                        <i class="bi bi-receipt"></i> Create New Invoice
+                    </a>
+                    <a href="{% url 'customer_create' %}" class="btn btn-outline-info btn-action">
+                        <i class="bi bi-person-plus"></i> Add New Customer
+                    </a>
+                    <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary btn-action">
+                        <i class="bi bi-people"></i> View All Customers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Info</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Logged in as:</dt>
+                    <dd class="col-sm-7">{{ user.get_full_name|default:user.username }}</dd>
+                    
+                    <dt class="col-sm-5">Email:</dt>
+                    <dd class="col-sm-7">{{ user.email }}</dd>
+                    
+                    <dt class="col-sm-5">User Role:</dt>
+                    <dd class="col-sm-7">
+                        {% if user.is_staff %}
+                            <span class="badge bg-danger">Staff/Admin</span>
+                        {% else %}
+                            <span class="badge bg-primary">User</span>
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-sm-5">Last Login:</dt>
+                    <dd class="col-sm-7">{{ user.last_login|date:"M d, Y H:i" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

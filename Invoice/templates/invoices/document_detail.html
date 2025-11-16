@@ -1,0 +1,372 @@
+{% extends 'invoices/base.html' %}
+
+{% block title %}{{ document.get_document_type_display }} {{ document.reference }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -26px;
+        top: 5px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #3498db;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    {{ document.get_document_type_display }} {{ document.reference }}
+                </h2>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-calendar"></i> {{ document.date|date:"F d, Y" }}
+                </p>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <a href="{% if document.document_type == 'quotation' %}{% url 'quotation_list' %}{% else %}{% url 'invoice_list' %}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                
+                {% if document.status == 'draft' or document.status == 'pending' %}
+                <a href="{% url 'document_edit' document.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'document_preview' document.pk %}" class="btn btn-info" target="_blank">
+                    <i class="bi bi-eye"></i> Preview
+                </a>
+                
+                {% if document.status == 'approved' or document.status == 'paid' %}
+                <a href="{% url 'document_pdf' document.pk %}" class="btn btn-success" target="_blank">
+                    <i class="bi bi-file-pdf"></i> Download PDF
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Status Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-2">Status</h5>
+                        <span class="badge status-{{ document.status }} fs-6 " style="background-color: #3498db;">
+                            {{ document.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    {% if user.is_staff %}
+                    <div class="btn-group">
+                        {% if document.status != 'approved' and document.status != 'rejected' %}
+                        <form method="post" action="{% url 'document_approve' document.pk %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success" 
+                                    onclick="return confirm('Approve this {{ document.get_document_type_display|lower }}?')">
+                                <i class="bi bi-check-circle"></i> Approve
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="{% url 'document_reject' document.pk %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Reject this {{ document.get_document_type_display|lower }}?')">
+                                <i class="bi bi-x-circle"></i> Reject
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        {% if document.document_type == 'quotation' and document.status == 'approved' and not document.converted_to_invoice %}
+                        <a href="{% url 'quotation_convert' document.pk %}" class="btn btn-warning">
+                            <i class="bi bi-arrow-right-circle"></i> Convert to Invoice
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if document.approved_by %}
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="bi bi-check-circle"></i>
+                    Approved by <strong>{{ document.approved_by.username }}</strong> 
+                    on {{ document.approved_at|date:"F d, Y \a\t H:i" }}
+                </div>
+                {% endif %}
+                
+                {% if document.rejected_by %}
+                <div class="alert alert-danger mt-3 mb-0">
+                    <i class="bi bi-x-circle"></i>
+                    Rejected by <strong>{{ document.rejected_by.username }}</strong> 
+                    on {{ document.rejected_at|date:"F d, Y \a\t H:i" }}
+                </div>
+                {% endif %}
+                
+                {% if document.converted_to_invoice %}
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="bi bi-arrow-right-circle"></i>
+                    Converted to Invoice 
+                    <a href="{% url 'document_detail' document.converted_to_invoice.pk %}">
+                        {{ document.converted_to_invoice.reference }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Customer Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-person-circle"></i> Customer Information
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Name:</strong><br>
+                        {{ document.customer_name }}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <strong>Phone:</strong><br>
+                        {{ document.customer_phone|default:"N/A" }}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <strong>Location:</strong><br>
+                        {{ document.customer_location|default:"N/A" }}
+                    </div>
+                    
+                    {% if document.document_type == 'invoice' %}
+                    <div class="col-md-6 mb-3">
+                        <strong>PO Reference:</strong><br>
+                        {{ document.customer_po_ref|default:"N/A" }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Items Table -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-list-check"></i> Line Items
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Description</th>
+                                <th style="width: 80px;">Unit</th>
+                                <th style="width: 100px;" class="text-center">Qty</th>
+                                <th style="width: 150px;" class="text-end">Unit Price</th>
+                                <th style="width: 150px;" class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in document.items.all %}
+                            <tr>
+                                <td class="text-center">{{ item.item_number }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.unit }}</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-end">
+                                    {{ item.unit_price|floatformat:2 }} {{ document.currency }}
+                                </td>
+                                <td class="text-end fw-bold">
+                                    {{ item.total_price|floatformat:2 }} {{ document.currency }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot style="background-color: #f8f9fa;">
+                            <tr>
+                                <td colspan="5" class="text-end fw-bold">Subtotal:</td>
+                                <td class="text-end fw-bold">
+                                    {{ document.subtotal|floatformat:2 }} {{ document.currency }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">TVA ({{ document.tva_rate }}%):</td>
+                                <td class="text-end">
+                                    {{ document.tva_amount|floatformat:2 }} {{ document.currency }}
+                                </td>
+                            </tr>
+                            <tr style="background-color: #e9ecef;">
+                                <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
+                                <td class="text-end fw-bold fs-5 text-success">
+                                    {{ document.total|floatformat:2 }} {{ document.currency }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quotation-specific Fields -->
+        {% if document.document_type == 'quotation' %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Quotation Details
+            </div>
+            <div class="card-body">
+                {% if document.work_delivery %}
+                <div class="mb-3">
+                    <strong>Work Delivery:</strong><br>
+                    {{ document.work_delivery }}
+                </div>
+                {% endif %}
+                
+                {% if document.payment_terms %}
+                <div class="mb-3">
+                    <strong>Payment Terms:</strong><br>
+                    {{ document.payment_terms }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Notes -->
+        {% if document.notes %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-chat-left-text"></i> Internal Notes
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ document.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Right Column -->
+    <div class="col-lg-4">
+        <!-- Metadata -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Details
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Reference Number</small>
+                    <p class="mb-0 fw-bold">{{ document.reference }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Date</small>
+                    <p class="mb-0">{{ document.date|date:"F d, Y" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Created By</small>
+                    <p class="mb-0">{{ document.created_by.username }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Created At</small>
+                    <p class="mb-0">{{ document.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Last Updated</small>
+                    <p class="mb-0">{{ document.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Currency</small>
+                    <p class="mb-0">{{ document.currency }}</p>
+                </div>
+                
+                <div>
+                    <small class="text-muted">TVA Rate</small>
+                    <p class="mb-0">{{ document.tva_rate }}%</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-clock-history"></i> History
+            </div>
+            <div class="card-body">
+                {% if history %}
+                    <div class="timeline">
+                        {% for entry in history %}
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ entry.get_action_display }}</strong>
+                                <small class="text-muted">
+                                    {{ entry.timestamp|date:"M d, H:i" }}
+                                </small>
+                            </div>
+                            <small class="text-muted">
+                                by {{ entry.user.username }}
+                            </small>
+                            {% if entry.details %}
+                            <p class="mb-0 mt-1 small">{{ entry.details }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No history available</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        {% if document.status == 'draft' or user.is_staff %}
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle"></i> Danger Zone
+            </div>
+            <div class="card-body">
+                <p class="small mb-3">
+                    Deleting this document is permanent and cannot be undone.
+                </p>
+                <a href="{% url 'document_delete' document.pk %}" class="btn btn-danger w-100">
+                    <i class="bi bi-trash"></i> Delete Document
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if document.document_type == 'quotation' %}Quotation{% else %}Invoice{% endif %} {{ document.reference }}</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-size: 11px;
+        }
+        
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-logo {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c5282;
+            margin-bottom: 5px;
+        }
+        
+        .company-details {
+            font-size: 10px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .invoice-title {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .invoice-title h1 {
+            font-size: 28px;
+            color: #2c5282;
+            margin-bottom: 0;
+        }
+        
+        /* Info Boxes */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .info-box {
+            border: 1px solid #333;
+            padding: 8px;
+            flex: 1;
+        }
+        
+        .info-box:first-child {
+            margin-right: 15px;
+        }
+        
+        .info-box h3 {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            background-color: #f0f0f0;
+            padding: 3px;
+        }
+        
+        .info-box p {
+            font-size: 10px;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+        
+        /* Reference and Date */
+        .ref-date {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        
+        .items-table thead {
+            background-color: #f0f0f0;
+        }
+        
+        .items-table th {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .items-table td {
+            border: 1px solid #333;
+            padding: 5px;
+            font-size: 10px;
+            height: 30px;
+        }
+        
+        .items-table td.center {
+            text-align: center;
+        }
+        
+        .items-table td.right {
+            text-align: right;
+        }
+        
+        /* Quotation Details */
+        .quotation-details {
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        
+        .quotation-details div {
+            margin-bottom: 5px;
+        }
+        
+        .quotation-details strong {
+            font-style: italic;
+        }
+        
+        /* Totals Section */
+        .totals-section {
+            margin-left: auto;
+            width: 350px;
+            margin-bottom: 10px;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid #333;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .totals-row.total {
+            background-color: #f0f0f0;
+            font-size: 12px;
+        }
+        
+        /* Value Statement */
+        .value-statement {
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 10px;
+        }
+        
+        /* Bank Info */
+        .bank-info {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 10px;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+        
+        .signature-section {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .signature-section p {
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        
+        .contact-info {
+            text-align: center;
+            font-size: 9px;
+            margin-top: 10px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .invoice-container {
+                box-shadow: none;
+                padding: 20px;
+                max-width: 100%;
+            }
+            
+            .no-print {
+                display: none;
+            }
+            
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+        }
+        
+        /* Print Button */
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #2c5282;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .print-button:hover {
+            background: #1e3a5f;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">
+        🖨️ Print / Save PDF
+    </button>
+    
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-info">
+                <div class="company-logo">{{ company.name }}</div>
+            </div>
+            
+            <div class="invoice-title">
+                <h1>{% if document.document_type == 'quotation' %}Quotation{% else %}Invoice{% endif %}</h1>
+            </div>
+        </div>
+        
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-box">
+                <h3>{{ company.name }}</h3>
+                <p>
+                    {{ company.address }}<br>
+                    {{ company.city }} - {{ company.country }}<br>
+                    NIF: {{ company.nif }}<br>
+                    Tel: {{ company.phone }}<br>
+                    E-mail: {{ company.email }}
+                </p>
+            </div>
+            
+            <div class="info-box">
+                <h3>CUSTOMER INFORMATION</h3>
+                <p>
+                    <strong>{{ document.customer_name }}</strong><br>
+                    {% if document.customer_location %}
+                    {{ document.customer_location }}<br>
+                    {% endif %}
+                    {% if document.customer_phone %}
+                    TEL: {{ document.customer_phone }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Reference and Date -->
+        <div class="ref-date">
+            <div><strong>Reference:</strong> {{ document.reference }}</div>
+            {% if document.document_type == 'invoice' %}
+            <div><strong>Customer PO Ref.</strong> {{ document.customer_po_ref|default:"" }}</div>
+            {% endif %}
+        </div>
+        <div class="ref-date">
+            <div><strong>Date:</strong> {{ document.date|date:"F d, Y" }}</div>
+        </div>
+        
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">Item</th>
+                    <th>DESCRIPTION</th>
+                    <th style="width: 80px;">Unit</th>
+                    <th style="width: 80px;">QTY</th>
+                    <th style="width: 120px;">UNIT PRICE<br>({{ document.currency }})</th>
+                    <th style="width: 120px;">TOTAL PRICE<br>({{ document.currency }})</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in document.items.all %}
+                <tr>
+                    <td class="center">{{ item.item_number }}</td>
+                    <td>{{ item.description }}</td>
+                    <td class="center">{{ item.unit }}</td>
+                    <td class="center">{{ item.quantity }}</td>
+                    <td class="right">{{ document.currency }} {{ item.unit_price|floatformat:2 }}</td>
+                    <td class="right">{{ document.currency }} {{ item.total_price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                
+                <!-- Empty rows to complete exactly 6 rows total -->
+                {% if document.items.count < 6 %}
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter|add:document.items.count <= 6 %}
+                        <tr>
+                            <td class="center">{{ forloop.counter|add:document.items.count }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        
+        <!-- Quotation-specific fields (Work Delivery & Payment Terms) -->
+      
+        
+        <!-- Totals -->
+        <div class="totals-section">
+            <div class="totals-row">
+                <span>TOTAL {{ document.currency }}</span>
+                <span>{{ document.currency }} {{ document.subtotal|floatformat:2 }}</span>
+            </div>
+            <div class="totals-row">
+                <span>TVA {{ document.tva_rate }}%</span>
+                <span>{{ document.currency }} {{ document.tva_amount|floatformat:2 }}</span>
+            </div>
+            <div class="totals-row total">
+                <span>TOTAL {% if document.document_type == 'quotation' %}QUOTATION{% else %}INVOICE{% endif %} {{ document.currency }}</span>
+                <span>{{ document.currency }} {{ document.total|floatformat:2 }}</span>
+            </div>
+        </div>
+          {% if document.document_type == 'quotation' %}
+        <div class="quotation-details">
+            {% if document.work_delivery %}
+            <div>
+                <strong>Work Delivery:</strong><br>
+                <span style="margin-left: 20px;">{{ document.work_delivery }}</span>
+            </div>
+            {% endif %}
+            
+            {% if document.payment_terms %}
+            <div>
+                <strong>Payment Term:</strong><br>
+                <span style="margin-left: 20px;">{{ document.payment_terms }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        <!-- Invoice-specific value statement -->
+        {% if document.document_type == 'invoice' %}
+        <div class="value-statement">
+            The value of this invoice is as follow: 
+            <strong>{{ document.amount_in_words|default:"" }}</strong>
+        </div>
+        {% endif %}
+        
+        <!-- Bank Information -->
+        <div class="bank-info">
+            <strong>{{ company.name }}</strong><br>
+            Account Number: {{ company.account_number }} - {{ company.bank_name }}<br>
+            {{ company.bank_code }}
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="signature-section">
+                <p><strong>{{ company.department|default:"Commercial Dept" }}</strong></p>
+                <p style="margin-top: 30px;">_________________________</p>
+                <p><em>Signature & Stamp</em></p>
+            </div>
+            
+            <div class="contact-info">
+                If you have any questions about this {% if document.document_type == 'quotation' %}offer{% else %}invoice{% endif %}, please contact<br>
+                {{ company.email }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,620 @@
+{% extends 'invoices/base.html' %}
+
+{% block title %}{{ action }} {{ doc_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-row {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .formset-row.to-delete {
+        opacity: 0.5;
+        text-decoration: line-through;
+    }
+    
+    .delete-row {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .total-calculation {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .field-errors {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .item-number-display {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #495057;
+        padding: 0.25rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-{% if action == 'Create' %}plus-circle{% else %}pencil-square{% endif %}"></i>
+                {{ action }} {{ doc_name }}
+            </h2>
+            <a href="{% if document_type == 'quotation' %}{% url 'quotation_list' %}{% else %}{% url 'invoice_list' %}{% endif %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to {{ doc_name }} List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Display form errors -->
+{% if form.errors or formset.errors or formset.non_form_errors %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Please correct the following errors:</h5>
+    <ul class="mb-0">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        {% for error in formset.non_form_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        {% for form_errors in formset.errors %}
+            {% for field, errors in form_errors.items %}
+                {% if field != 'DELETE' %}
+                    {% for error in errors %}
+                        <li><strong>Item {{ forloop.parentloop.counter }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<form method="post" id="documentForm">
+    {% csrf_token %}
+    
+    <!-- Hidden document_type field (rendered by Django form) -->
+    {{ form.document_type }}
+    
+    <div class="row">
+        <!-- Left Column - Document Details -->
+        <div class="col-lg-8">
+            <!-- Basic Document Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-info-circle"></i> Document Information
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date *</label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <div class="field-errors">{{ form.date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="field-errors">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Currency *</label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}
+                                <div class="field-errors">{{ form.currency.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">TVA Rate (%)</label>
+                            {{ form.tva_rate }}
+                            {% if form.tva_rate.errors %}
+                                <div class="field-errors">{{ form.tva_rate.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person"></i> Customer Information
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Select Existing Customer (Optional)</label>
+                            {{ form.customer }}
+                            <small class="form-text text-muted">
+                                Or enter customer details manually below
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Customer Name *</label>
+                            {{ form.customer_name }}
+                            {% if form.customer_name.errors %}
+                                <div class="field-errors">{{ form.customer_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            {{ form.customer_phone }}
+                            {% if form.customer_phone.errors %}
+                                <div class="field-errors">{{ form.customer_phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">Location</label>
+                            {{ form.customer_location }}
+                            {% if form.customer_location.errors %}
+                                <div class="field-errors">{{ form.customer_location.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Invoice-specific field -->
+                        {% if document_type == 'invoice' %}
+                        <div class="col-12">
+                            <label class="form-label">Customer PO Reference</label>
+                            {{ form.customer_po_ref }}
+                            {% if form.customer_po_ref.errors %}
+                                <div class="field-errors">{{ form.customer_po_ref.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Customer's purchase order reference</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quotation-Specific Fields -->
+            {% if document_type == 'quotation' %}
+            <div class="card mb-4" id="quotation-fields">
+                <div class="card-header" style="background-color: #fef3c7;">
+                    <i class="bi bi-file-text"></i> Quotation Details
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Work Delivery Terms</strong></label>
+                        {{ form.work_delivery }}
+                        {% if form.work_delivery.errors %}
+                            <div class="field-errors">{{ form.work_delivery.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Specify delivery conditions (e.g., "Immediately after confirmation - subjected to prior order")</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Payment Terms</strong></label>
+                        {{ form.payment_terms }}
+                        {% if form.payment_terms.errors %}
+                            <div class="field-errors">{{ form.payment_terms.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Specify payment conditions (e.g., "100% After work completion")</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Line Items -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-check"></i> Line Items</span>
+                    <button type="button" class="btn btn-success btn-sm" id="addItemBtn">
+                        <i class="bi bi-plus"></i> Add Item
+                    </button>
+                </div>
+                <div class="card-body">
+                    {{ formset.management_form }}
+                    
+                    <div id="formsetContainer">
+                        <!-- Initial forms will be added by JavaScript -->
+                    </div>
+                    
+                    <!-- Empty form template (moved outside the DOM to prevent validation) -->
+                    <script type="text/html" id="emptyFormTemplate">
+                        <div class="formset-row" data-form-index="__prefix__">
+                            <button type="button" class="btn btn-danger btn-sm delete-row">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            
+                            <div class="row g-2">
+                                <div class="col-md-1">
+                                    <label class="form-label small">Item #</label>
+                                    <div class="item-number-display">1</div>
+                                    <input type="hidden" name="items-__prefix__-item_number" value="1" class="item-number-input">
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label small">Description *</label>
+                                    {{ formset.empty_form.description }}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label small">Unit</label>
+                                    {{ formset.empty_form.unit }}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label small">Quantity *</label>
+                                    {{ formset.empty_form.quantity }}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label small">Unit Price *</label>
+                                    {{ formset.empty_form.unit_price }}
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label class="form-label small">Total</label>
+                                    <input type="text" class="form-control form-control-sm item-total" readonly value="0.00">
+                                </div>
+                            </div>
+                            
+                            {{ formset.empty_form.id }}
+                            <div style="display:none;">{{ formset.empty_form.DELETE }}</div>
+                        </div>
+                    </script>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle"></i> 
+                        Click "Add Item" to add more line items. Item totals are calculated automatically.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Notes -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-chat-left-text"></i> Additional Information
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Internal Notes</label>
+                        {{ form.notes }}
+                        <small class="form-text text-muted">These notes are for internal use only and won't appear on the document</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Footer Text</label>
+                        {{ form.footer_text }}
+                        <small class="form-text text-muted">Additional text to display at the bottom of the document</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Summary -->
+        <div class="col-lg-4">
+            <div class="total-calculation">
+                <h5 class="mb-3">{{ doc_name }} Summary</h5>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <strong id="subtotalDisplay">0.00 MRU</strong>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>TVA (<span id="tvaRateDisplay">0</span>%):</span>
+                    <strong id="tvaDisplay">0.00 MRU</strong>
+                </div>
+                
+                <hr class="border-light">
+                
+                <div class="d-flex justify-content-between mb-4">
+                    <h5>Total:</h5>
+                    <h4 id="totalDisplay">0.00 MRU</h4>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-light btn-lg">
+                        <i class="bi bi-save"></i> {{ action }} {{ doc_name }}
+                    </button>
+                    
+                    <a href="{% if document_type == 'quotation' %}{% url 'quotation_list' %}{% else %}{% url 'invoice_list' %}{% endif %}" class="btn btn-outline-light">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                    
+                    {% if document %}
+                    <hr class="border-light">
+                    <a href="{% url 'document_preview' document.pk %}" 
+                       class="btn btn-outline-light" target="_blank">
+                        <i class="bi bi-eye"></i> Preview
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4 small opacity-75">
+                    <i class="bi bi-lightbulb"></i> 
+                    <strong>Tip:</strong> All calculations update automatically as you type
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('documentForm');
+        const formsetContainer = document.getElementById('formsetContainer');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const totalFormsInput = document.querySelector('#id_items-TOTAL_FORMS');
+        const customerSelect = document.querySelector('#id_customer');
+        const tvaRateInput = document.querySelector('#id_tva_rate');
+        const currencySelect = document.querySelector('#id_currency');
+        
+        console.log('Form initialized');
+        
+        // Remove any inline oninput attributes added by Django
+        function cleanFormInputs(container) {
+            container.querySelectorAll('input, select, textarea').forEach(el => {
+                el.removeAttribute('oninput');
+            });
+        }
+        
+        // Calculate totals for individual items
+        function calculateItemTotal(row) {
+            const quantityInput = row.querySelector('[name*="quantity"]');
+            const unitPriceInput = row.querySelector('[name*="unit_price"]');
+            
+            const quantity = parseFloat(quantityInput?.value) || 0;
+            const unitPrice = parseFloat(unitPriceInput?.value) || 0;
+            const total = quantity * unitPrice;
+            
+            const totalInput = row.querySelector('.item-total');
+            if (totalInput) {
+                totalInput.value = total.toFixed(2);
+            }
+            
+            return total;
+        }
+        
+        // Calculate document totals
+        function calculateDocumentTotals() {
+            let subtotal = 0;
+            
+            // Sum all visible item totals
+            const visibleRows = document.querySelectorAll('.formset-row');
+            visibleRows.forEach(row => {
+                if (row.style.display !== 'none' && !row.classList.contains('to-delete')) {
+                    subtotal += calculateItemTotal(row);
+                }
+            });
+            
+            const tvaRate = parseFloat(tvaRateInput?.value) || 0;
+            const tva = (subtotal * tvaRate) / 100;
+            const total = subtotal + tva;
+            const currency = currencySelect?.value || 'MRU';
+            
+            // Update display
+            document.getElementById('subtotalDisplay').textContent = `${subtotal.toFixed(2)} ${currency}`;
+            document.getElementById('tvaRateDisplay').textContent = tvaRate.toFixed(2);
+            document.getElementById('tvaDisplay').textContent = `${tva.toFixed(2)} ${currency}`;
+            document.getElementById('totalDisplay').textContent = `${total.toFixed(2)} ${currency}`;
+        }
+        
+        // Add event listeners to quantity and unit price inputs
+        function attachCalculationListeners() {
+            document.querySelectorAll('[name*="quantity"], [name*="unit_price"]').forEach(input => {
+                input.removeEventListener('input', calculateDocumentTotals);
+                input.addEventListener('input', calculateDocumentTotals);
+            });
+        }
+        
+        // Update item numbers
+        function updateItemNumbers() {
+            const visibleRows = Array.from(document.querySelectorAll('.formset-row'))
+                .filter(row => row.style.display !== 'none' && !row.classList.contains('to-delete'));
+            
+            visibleRows.forEach((row, index) => {
+                const itemNumber = index + 1;
+                const display = row.querySelector('.item-number-display');
+                const input = row.querySelector('.item-number-input');
+                
+                if (display) display.textContent = itemNumber;
+                if (input) input.value = itemNumber;
+            });
+        }
+        
+        // Delete row functionality
+        function attachDeleteListeners() {
+            document.querySelectorAll('.delete-row').forEach(btn => {
+                btn.onclick = null; // Remove old listener
+                btn.onclick = function() {
+                    const row = this.closest('.formset-row');
+                    const deleteCheckbox = row.querySelector('input[name*="DELETE"]');
+                    const idInput = row.querySelector('input[name*="-id"]');
+                    
+                    // If has ID, it's an existing item - mark for deletion
+                    if (idInput && idInput.value) {
+                        deleteCheckbox.checked = true;
+                        row.classList.add('to-delete');
+                        row.style.display = 'none';
+                    } else {
+                        // New item - remove completely
+                        row.remove();
+                        const currentTotal = parseInt(totalFormsInput.value);
+                        totalFormsInput.value = currentTotal - 1;
+                    }
+                    
+                    updateItemNumbers();
+                    calculateDocumentTotals();
+                };
+            });
+        }
+        
+        // Create a new item row
+        function createNewItemRow(index) {
+            const template = document.getElementById('emptyFormTemplate');
+            if (!template) return null;
+            
+            // Get template HTML and replace __prefix__
+            let html = template.innerHTML.replace(/__prefix__/g, index);
+            
+            // Create a temporary container to parse HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            const newForm = temp.firstElementChild;
+            
+            // Clean the form inputs
+            cleanFormInputs(newForm);
+            
+            // Clear values
+            newForm.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(field => {
+                if (!field.classList.contains('item-total') && !field.classList.contains('item-number-input')) {
+                    field.value = '';
+                }
+            });
+            
+            // Set default quantity to 1
+            const qtyInput = newForm.querySelector('[name*="quantity"]');
+            if (qtyInput) qtyInput.value = '1';
+            
+            // Reset select to default
+            newForm.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
+            });
+            
+            return newForm;
+        }
+        
+        // Initialize with 2 empty rows
+        function initializeEmptyRows() {
+            const existingRows = formsetContainer.querySelectorAll('.formset-row').length;
+            
+            if (existingRows === 0) {
+                // Create 2 initial rows
+                for (let i = 0; i < 2; i++) {
+                    const newRow = createNewItemRow(i);
+                    if (newRow) {
+                        formsetContainer.appendChild(newRow);
+                    }
+                }
+                
+                // Update TOTAL_FORMS
+                totalFormsInput.value = '2';
+                
+                // Update item numbers
+                updateItemNumbers();
+                
+                // Attach listeners
+                attachCalculationListeners();
+                attachDeleteListeners();
+            }
+        }
+        
+        // Auto-fill customer data when customer is selected
+        if (customerSelect) {
+            customerSelect.addEventListener('change', function() {
+                const customerId = this.value;
+                
+                if (customerId) {
+                    fetch(`/customers/${customerId}/data/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const customerNameInput = document.querySelector('#id_customer_name');
+                            const customerLocationInput = document.querySelector('#id_customer_location');
+                            const customerPhoneInput = document.querySelector('#id_customer_phone');
+                            
+                            if (customerNameInput) customerNameInput.value = data.name || '';
+                            if (customerLocationInput) customerLocationInput.value = data.location || '';
+                            if (customerPhoneInput) customerPhoneInput.value = data.phone || '';
+                        })
+                        .catch(error => console.error('Error fetching customer data:', error));
+                }
+            });
+        }
+        
+        // Listen to TVA rate and currency changes
+        if (tvaRateInput) {
+            tvaRateInput.addEventListener('input', calculateDocumentTotals);
+        }
+        if (currencySelect) {
+            currencySelect.addEventListener('change', calculateDocumentTotals);
+        }
+        
+        // Initialize the form
+        initializeEmptyRows();
+        calculateDocumentTotals();
+        
+        // Add new item functionality
+        addItemBtn.addEventListener('click', function() {
+            const totalForms = parseInt(totalFormsInput.value);
+            const newRow = createNewItemRow(totalForms);
+            
+            if (newRow) {
+                formsetContainer.appendChild(newRow);
+                
+                // Increment TOTAL_FORMS
+                totalFormsInput.value = totalForms + 1;
+                
+                // Update item numbers
+                updateItemNumbers();
+                
+                // Attach listeners
+                attachCalculationListeners();
+                attachDeleteListeners();
+                calculateDocumentTotals();
+                
+                console.log('Item added, total forms:', totalForms + 1);
+            }
+        });
+        
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitting...');
+            
+            // Check if at least one item exists
+            const visibleItems = Array.from(document.querySelectorAll('.formset-row'))
+                .filter(row => row.style.display !== 'none' && !row.classList.contains('to-delete'));
+            
+            if (visibleItems.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one line item.');
+                return false;
+            }
+            
+            // Check if customer name is filled
+            const customerName = document.querySelector('#id_customer_name');
+            if (customerName && !customerName.value.trim()) {
+                e.preventDefault();
+                alert('Please enter a customer name.');
+                customerName.focus();
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting with', visibleItems.length, 'items');
+            return true;
+        });
+    });
+</script>
+{% endblock %}
