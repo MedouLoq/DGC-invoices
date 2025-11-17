@@ -436,26 +436,47 @@ def document_reject(request, pk):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def quotation_convert_to_invoice(request, pk):
-    """Convert quotation to invoice"""
+    """Convert quotation to invoice - DEBUG VERSION"""
+    import traceback
+    
     quotation = get_object_or_404(Document, pk=pk, document_type='quotation')
+    
+    print("\n" + "=" * 80)
+    print(f"VIEW: Starting conversion process for quotation {quotation.reference}")
+    print(f"      User: {request.user.username}")
+    print(f"      Quotation PK: {quotation.pk}")
+    print(f"      Items count: {quotation.items.count()}")
+    print("=" * 80 + "\n")
     
     if request.method == 'POST':
         try:
             with transaction.atomic():
+                print("VIEW: Calling convert_to_invoice()...")
                 invoice = quotation.convert_to_invoice(request.user)
+                print(f"VIEW: Conversion successful! Invoice {invoice.reference} created")
+                
                 messages.success(
                     request,
                     f'Quotation {quotation.reference} converted to invoice {invoice.reference}!'
                 )
                 return redirect('document_detail', pk=invoice.pk)
+                
         except Exception as e:
+            print("\n" + "!" * 80)
+            print("VIEW: ERROR OCCURRED")
+            print("!" * 80)
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print("\nFull traceback:")
+            traceback.print_exc()
+            print("!" * 80 + "\n")
+            
             messages.error(request, f'Error converting quotation: {str(e)}')
             return redirect('document_detail', pk=pk)
     
     return render(request, 'invoices/quotation_convert_confirm.html', {
         'quotation': quotation
     })
-
 
 @login_required
 def document_change_status(request, pk):
