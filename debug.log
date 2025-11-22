@@ -1129,3 +1129,5 @@ Watching for file changes with StatReloader
 C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
 Watching for file changes with StatReloader
 "GET /documents/2/pdf/ HTTP/1.1" 200 374394
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoicemanagement\settings.py changed, reloading.
+Watching for file changes with StatReloader
