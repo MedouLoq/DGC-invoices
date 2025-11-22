@@ -31,10 +31,18 @@
             box-shadow: 0 2px 4px rgba(0,0,0,.08);
         }
         
+        .navbar-brand {
+            font-size: 1.1rem;
+        }
+        
+        /* Sidebar Styles */
         .sidebar {
             min-height: calc(100vh - 56px);
             background-color: #fff;
             box-shadow: 2px 0 4px rgba(0,0,0,.08);
+            position: sticky;
+            top: 56px;
+            overflow-y: auto;
         }
         
         .sidebar .nav-link {
@@ -42,6 +50,7 @@
             padding: 0.75rem 1rem;
             border-left: 3px solid transparent;
             transition: all 0.3s;
+            font-size: 0.95rem;
         }
         
         .sidebar .nav-link:hover,
@@ -56,8 +65,13 @@
             margin-right: 10px;
         }
         
+        /* Mobile Sidebar */
+        .offcanvas-sidebar {
+            width: 280px;
+        }
+        
         .main-content {
-            padding: 2rem;
+            padding: 1.5rem;
         }
         
         .card {
@@ -70,6 +84,7 @@
             background-color: #fff;
             border-bottom: 2px solid #f8f9fa;
             font-weight: 600;
+            font-size: 1rem;
         }
         
         .stat-card {
@@ -97,6 +112,11 @@
             font-size: 0.85em;
         }
         
+        .table-responsive {
+            border-radius: 0.375rem;
+            box-shadow: 0 0 10px rgba(0,0,0,.08);
+        }
+        
         .table-actions {
             white-space: nowrap;
         }
@@ -104,12 +124,18 @@
         .table-actions .btn {
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
+            margin: 0.1rem;
         }
         
         .page-header {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 2px solid #e9ecef;
+        }
+        
+        .page-header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .btn-action {
@@ -125,9 +151,198 @@
             z-index: 1050;
             max-width: 400px;
         }
+        /* Status Badge Styles - Add this to your base.html <style> section */
+
+/* Document Status Badges */
+.badge.status-draft,
+.status-draft {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+.badge.status-pending,
+.status-pending {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge.status-approved,
+.status-approved {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+.badge.status-rejected,
+.status-rejected {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.badge.status-paid,
+.status-paid {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.badge.status-cancelled,
+.status-cancelled {
+    background-color: #495057 !important;
+    color: white !important;
+}
+
+/* Badge base styling */
+.badge {
+    padding: 0.4em 0.8em;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+}
+        
+        /* Mobile Optimizations */
+        @media (max-width: 767.98px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .card-header {
+                font-size: 0.95rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            /* Stack stat cards on mobile */
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            
+            /* Improve table readability on mobile */
+            .table {
+                font-size: 0.875rem;
+            }
+            
+            .table thead th {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+            
+            .table tbody td {
+                padding: 0.5rem;
+            }
+            
+            /* Stack action buttons on mobile */
+            .table-actions .btn {
+                display: block;
+                width: 100%;
+                margin: 0.2rem 0;
+            }
+            
+            /* Responsive buttons */
+            .btn-action {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .btn-action i {
+                font-size: 1rem;
+            }
+            
+            /* Alert positioning for mobile */
+            .alert-container {
+                top: 60px;
+                right: 10px;
+                left: 10px;
+                max-width: 100%;
+            }
+            
+            .alert {
+                font-size: 0.875rem;
+            }
+            
+            /* Form improvements */
+            .form-label {
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+            
+            .form-control,
+            .form-select {
+                font-size: 1rem;
+            }
+            
+            /* Navbar brand on mobile */
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Tablet optimizations */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .sidebar {
+                width: 200px;
+            }
+            
+            .sidebar .nav-link {
+                font-size: 0.9rem;
+                padding: 0.6rem 0.8rem;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 8px;
+            }
+        }
+        
+        /* Small mobile devices */
+        @media (max-width: 575.98px) {
+            .page-header {
+                margin-bottom: 1rem;
+            }
+            
+            .page-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            /* Hide text on very small buttons, show only icons */
+            .btn-action .btn-text {
+                display: none;
+            }
+            
+            .table {
+                font-size: 0.8rem;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* Landscape mobile optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .sidebar {
+                max-height: calc(100vh - 56px);
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
         
         @media print {
-            .navbar, .sidebar, .no-print {
+            .navbar, .sidebar, .no-print, .offcanvas {
                 display: none !important;
             }
             
@@ -138,6 +353,29 @@
             body {
                 background: white;
             }
+            
+            .card {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px;
+            }
+            
+            .nav-link {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+            
+            .form-control,
+            .form-select {
+                min-height: 44px;
+            }
         }
     </style>
     
@@ -146,21 +384,27 @@
 <body>
     <!-- Navigation Bar -->
     {% if user.is_authenticated %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <i class="bi bi-receipt"></i> DGC Invoice System
+            <!-- Mobile Menu Toggle -->
+            <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <a class="navbar-brand ms-2 ms-lg-0" href="{% url 'dashboard' %}">
+                <i class="bi bi-receipt"></i> <span class="d-none d-sm-inline">DGC Invoice</span><span class="d-inline d-sm-none">DGC</span>
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-person-circle" style="font-size: 1.5rem;"></i>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                            <i class="bi bi-person-circle"></i> 
+                            <span class="d-none d-md-inline">{{ user.get_full_name|default:user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if user.is_staff %}
@@ -181,8 +425,8 @@
     
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-2 d-md-block sidebar no-print">
+            <!-- Desktop Sidebar -->
+            <nav class="col-lg-2 d-none d-lg-block sidebar no-print">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -236,8 +480,69 @@
                 </div>
             </nav>
             
+            <!-- Mobile Sidebar (Offcanvas) -->
+                <div class="offcanvas offcanvas-start offcanvas-sidebar d-lg-none" tabindex="-1" id="sidebarOffcanvas" data-bs-scroll="true">
+                <div class="offcanvas-header bg-primary text-white">
+                    <h5 class="offcanvas-title">
+                        <i class="bi bi-receipt"></i> Menu
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body p-0">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link mobile-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                               href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mt-3">
+                            <span class="nav-link text-muted fw-bold small">DOCUMENTS</span>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link mobile-nav-link {% if 'quotation' in request.path %}active{% endif %}" 
+                               href="{% url 'quotation_list' %}">
+                                <i class="bi bi-file-earmark-text"></i> Quotations
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link mobile-nav-link {% if 'invoice' in request.path %}active{% endif %}" 
+                               href="{% url 'invoice_list' %}">
+                                <i class="bi bi-receipt"></i> Invoices
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mt-3">
+                            <span class="nav-link text-muted fw-bold small">MANAGEMENT</span>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link mobile-nav-link {% if 'customer' in request.path %}active{% endif %}" 
+                               href="{% url 'customer_list' %}">
+                                <i class="bi bi-people"></i> Customers
+                            </a>
+                        </li>
+                        
+                        {% if user.is_staff %}
+                        <li class="nav-item mt-3">
+                            <span class="nav-link text-muted fw-bold small">ADMIN</span>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link mobile-nav-link" href="/admin/">
+                                <i class="bi bi-shield-lock"></i> Admin Panel
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
             <!-- Main Content -->
-            <main class="col-md-10 ms-sm-auto px-md-4 main-content">
+            <main class="col-lg-10 ms-sm-auto main-content">
                 <!-- Alert Messages -->
                 <div class="alert-container">
                     {% if messages %}
@@ -266,6 +571,44 @@
     <!-- jQuery (for AJAX) -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert:not(.no-auto-dismiss)');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+        
+        // Handle mobile navigation clicks
+        var mobileLinks = document.querySelectorAll('.mobile-nav-link');
+        var offcanvasEl = document.getElementById('sidebarOffcanvas');
+        var offcanvas = offcanvasEl ? bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl) : null;
+        
+        mobileLinks.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                // Get the href
+                var href = this.getAttribute('href');
+                
+                // Close the offcanvas first
+                if (offcanvas) {
+                    offcanvas.hide();
+                }
+                
+                // Small delay to let offcanvas close, then navigate
+                setTimeout(function() {
+                    window.location.href = href;
+                }, 150);
+                
+                // Prevent default to control the navigation timing
+                e.preventDefault();
+            });
+        });
+    });
+  
+</script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

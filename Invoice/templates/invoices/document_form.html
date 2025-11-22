@@ -235,7 +235,62 @@
                     {{ formset.management_form }}
                     
                     <div id="formsetContainer">
-                        <!-- Initial forms will be added by JavaScript -->
+                        {% if is_edit %}
+                        <!-- Existing items (for edit mode) -->
+                        {% for item_form in formset %}
+                        <div class="formset-row" data-form-index="{{ forloop.counter0 }}">
+                            <button type="button" class="btn btn-danger btn-sm delete-row">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            
+                            <div class="row g-2">
+                                <div class="col-md-1">
+                                    <label class="form-label small">Item #</label>
+                                    <div class="item-number-display">{{ forloop.counter }}</div>
+                                    <input type="hidden" name="items-{{ forloop.counter0 }}-item_number" value="{{ forloop.counter }}" class="item-number-input">
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label small">Description *</label>
+                                    {{ item_form.description }}
+                                    {% if item_form.description.errors %}
+                                        <div class="field-errors">{{ item_form.description.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label small">Unit</label>
+                                    {{ item_form.unit }}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label small">Quantity *</label>
+                                    {{ item_form.quantity }}
+                                    {% if item_form.quantity.errors %}
+                                        <div class="field-errors">{{ item_form.quantity.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label small">Unit Price *</label>
+                                    {{ item_form.unit_price }}
+                                    {% if item_form.unit_price.errors %}
+                                        <div class="field-errors">{{ item_form.unit_price.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <label class="form-label small">Total</label>
+                                    <input type="text" class="form-control form-control-sm item-total" readonly value="0.00">
+                                </div>
+                            </div>
+                            
+                            {{ item_form.id }}
+                            <div style="display:none;">{{ item_form.DELETE }}</div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        <!-- New items will be added here by JavaScript (for create mode) -->
                     </div>
                     
                     <!-- Empty form template (moved outside the DOM to prevent validation) -->
@@ -372,7 +427,10 @@
         const tvaRateInput = document.querySelector('#id_tva_rate');
         const currencySelect = document.querySelector('#id_currency');
         
-        console.log('Form initialized');
+        // Check if we're in edit mode (has existing rows)
+        const isEditMode = formsetContainer.querySelectorAll('.formset-row').length > 0;
+        
+        console.log('Form initialized, Edit mode:', isEditMode);
         
         // Remove any inline oninput attributes added by Django
         function cleanFormInputs(container) {
@@ -380,6 +438,9 @@
                 el.removeAttribute('oninput');
             });
         }
+        
+        // Clean existing form inputs on page load
+        cleanFormInputs(formsetContainer);
         
         // Calculate totals for individual items
         function calculateItemTotal(row) {
@@ -507,10 +568,11 @@
             return newForm;
         }
         
-        // Initialize with 2 empty rows
+        // Initialize with 2 empty rows (only for create mode)
         function initializeEmptyRows() {
             const existingRows = formsetContainer.querySelectorAll('.formset-row').length;
             
+            // Only add empty rows if we're in create mode (no existing rows)
             if (existingRows === 0) {
                 // Create 2 initial rows
                 for (let i = 0; i < 2; i++) {
@@ -525,10 +587,6 @@
                 
                 // Update item numbers
                 updateItemNumbers();
-                
-                // Attach listeners
-                attachCalculationListeners();
-                attachDeleteListeners();
             }
         }
         
@@ -564,6 +622,12 @@
         
         // Initialize the form
         initializeEmptyRows();
+        
+        // Attach listeners (both for create and edit mode)
+        attachCalculationListeners();
+        attachDeleteListeners();
+        
+        // Calculate totals on page load
         calculateDocumentTotals();
         
         // Add new item functionality

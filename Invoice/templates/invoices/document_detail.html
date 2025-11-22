@@ -120,7 +120,7 @@
                 </div>
                 
                 {% if document.approved_by %}
-                <div class="alert alert-success mt-3 mb-0">
+                <div class="alert alert-success mt-3 mb-0 no-auto-dismiss">
                     <i class="bi bi-check-circle"></i>
                     Approved by <strong>{{ document.approved_by.username }}</strong> 
                     on {{ document.approved_at|date:"F d, Y \a\t H:i" }}
@@ -128,7 +128,7 @@
                 {% endif %}
                 
                 {% if document.rejected_by %}
-                <div class="alert alert-danger mt-3 mb-0">
+                <div class="alert alert-danger mt-3 mb-0 no-auto-dismiss">
                     <i class="bi bi-x-circle"></i>
                     Rejected by <strong>{{ document.rejected_by.username }}</strong> 
                     on {{ document.rejected_at|date:"F d, Y \a\t H:i" }}
@@ -136,7 +136,7 @@
                 {% endif %}
                 
                 {% if document.converted_to_invoice %}
-                <div class="alert alert-info mt-3 mb-0">
+                <div class="alert alert-info mt-3 mb-0 no-auto-dismiss">
                     <i class="bi bi-arrow-right-circle"></i>
                     Converted to Invoice 
                     <a href="{% url 'document_detail' document.converted_to_invoice.pk %}">

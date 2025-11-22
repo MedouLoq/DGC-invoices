@@ -970,3 +970,162 @@ django.template.exceptions.TemplateSyntaxError: Unexpected end of expression in 
 "GET /invoices/ HTTP/1.1" 200 16383
 "GET /documents/6/ HTTP/1.1" 200 19625
 "GET /documents/6/preview/ HTTP/1.1" 200 16575
+"GET /dashboard/ HTTP/1.1" 200 29578
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9438
+"GET /quotations/ HTTP/1.1" 200 26988
+"GET /logout/ HTTP/1.1" 302 0
+"GET /login/ HTTP/1.1" 200 12196
+"POST /login/ HTTP/1.1" 200 12224
+"POST /login/ HTTP/1.1" 200 12224
+Watching for file changes with StatReloader
+"GET /documents/6/preview/ HTTP/1.1" 302 0
+"GET /login/?next=/documents/6/preview/ HTTP/1.1" 200 11948
+"GET /admin/Invoice/document/5/change/ HTTP/1.1" 302 0
+"GET /admin/login/?next=/admin/Invoice/document/5/change/ HTTP/1.1" 200 4218
+"GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+"GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+"GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2808
+"GET /static/admin/css/base.css HTTP/1.1" 200 22120
+"GET /static/admin/css/login.css HTTP/1.1" 200 951
+"GET /static/admin/css/responsive.css HTTP/1.1" 200 16565
+"GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 9327
+"POST /login/?next=/documents/6/preview/ HTTP/1.1" 302 0
+"GET /documents/6/preview/ HTTP/1.1" 200 16575
+"GET /static/invoices/images/logo.png HTTP/1.1" 200 45118
+"GET /static/invoices/images/company-stamp.png HTTP/1.1" 200 233443
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 30004
+"GET /documents/6/edit/ HTTP/1.1" 200 43590
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /documents/6/edit/ HTTP/1.1" 200 47781
+Internal Server Error: /customers/
+Traceback (most recent call last):
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\response.py", line 72, in resolve_template
+    return select_template(template, using=self.using)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 47, in select_template
+    raise TemplateDoesNotExist(", ".join(template_name_list), chain=chain)
+django.template.exceptions.TemplateDoesNotExist: invoices/customer_list.html, Invoice/customer_list.html
+"GET /customers/ HTTP/1.1" 500 83570
+"GET /customers/ HTTP/1.1" 200 19962
+"GET /customers/create/ HTTP/1.1" 200 21120
+"POST /customers/create/ HTTP/1.1" 302 0
+"GET /customers/ HTTP/1.1" 200 22890
+"GET /quotations/ HTTP/1.1" 200 26991
+"GET /quotations/create/ HTTP/1.1" 200 44733
+"GET /customers/1/data/ HTTP/1.1" 200 106
+"GET /dashboard/ HTTP/1.1" 200 29583
+"GET /dashboard/ HTTP/1.1" 200 30064
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9438
+"GET /quotations/ HTTP/1.1" 200 27472
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9438
+"GET /quotations/ HTTP/1.1" 200 28407
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9438
+"GET /documents/2/ HTTP/1.1" 200 33320
+"GET /documents/2/ HTTP/1.1" 200 33320
+"GET /documents/2/ HTTP/1.1" 200 33315
+"GET /documents/2/ HTTP/1.1" 200 33579
+"GET /documents/2/ HTTP/1.1" 200 33361
+"GET /documents/2/ HTTP/1.1" 200 33377
+Internal Server Error: /documents/2/pdf/
+Traceback (most recent call last):
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py", line 576, in document_pdf
+    html = render_to_string('invoices/document_pdf.html', {
+        'document': document,
+        'company': company,
+    })
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: invoices/document_pdf.html
+"GET /documents/2/pdf/ HTTP/1.1" 500 83179
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /documents/2/ HTTP/1.1" 200 33377
+Internal Server Error: /documents/2/pdf/
+Traceback (most recent call last):
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py", line 580, in document_pdf
+    from weasyprint import HTML, CSS
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\weasyprint\__init__.py", line 433, in <module>
+    from .css import preprocess_stylesheet  # noqa: I001, E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\weasyprint\css\__init__.py", line 28, in <module>
+    from .computed_values import COMPUTER_FUNCTIONS
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\weasyprint\css\computed_values.py", line 9, in <module>
+    from ..text.ffi import FROM_UNITS, ffi, pango
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\weasyprint\text\ffi.py", line 475, in <module>
+    gobject = _dlopen(
+        ffi, 'libgobject-2.0-0', 'gobject-2.0-0', 'gobject-2.0',
+        'libgobject-2.0.so.0', 'libgobject-2.0.dylib', 'libgobject-2.0-0.dll')
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\weasyprint\text\ffi.py", line 463, in _dlopen
+    return ffi.dlopen(names[0], flags)  # pragma: no cover
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cffi\api.py", line 150, in dlopen
+    lib, function_cache = _make_ffi_library(self, name, flags)
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cffi\api.py", line 834, in _make_ffi_library
+    backendlib = _load_backend_lib(backend, libname, flags)
+  File "C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cffi\api.py", line 829, in _load_backend_lib
+    raise OSError(msg)
+OSError: cannot load library 'libgobject-2.0-0': error 0x7e.  Additionally, ctypes.util.find_library() did not manage to locate a library called 'libgobject-2.0-0'
+"GET /documents/2/pdf/ HTTP/1.1" 500 154644
+C:\Users\loqmo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cffi\api.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /documents/2/ HTTP/1.1" 200 33377
+"GET /documents/2/pdf/ HTTP/1.1" 200 5226
+- Broken pipe from ('127.0.0.1', 54078)
+"GET /documents/2/pdf/ HTTP/1.1" 200 5226
+- Broken pipe from ('127.0.0.1', 49754)
+"GET /documents/2/pdf/ HTTP/1.1" 200 5226
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /documents/2/ HTTP/1.1" 200 33377
+"GET /documents/2/pdf/ HTTP/1.1" 200 5374
+"GET /documents/2/ HTTP/1.1" 200 33377
+"GET /documents/2/pdf/ HTTP/1.1" 200 374921
+"GET /documents/2/ HTTP/1.1" 200 33377
+"GET /documents/2/pdf/ HTTP/1.1" 200 374359
+"GET /documents/2/pdf/ HTTP/1.1" 200 374339
+"GET /documents/2/pdf/ HTTP/1.1" 200 374379
+"GET /documents/2/preview/ HTTP/1.1" 200 16778
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\loqmo\OneDrive\Desktop\Invoicemanagement\Invoice\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /documents/2/pdf/ HTTP/1.1" 200 374394

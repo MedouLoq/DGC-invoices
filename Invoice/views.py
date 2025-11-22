@@ -74,41 +74,37 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     """Main dashboard with overview"""
-    # Get statistics
+    # Get statistics - REMOVED created_by filter to show all documents
     total_quotations = Document.objects.filter(
-        document_type='quotation',
-        created_by=request.user
+        document_type='quotation'
     ).count()
     
     total_invoices = Document.objects.filter(
-        document_type='invoice',
-        created_by=request.user
+        document_type='invoice'
     ).count()
     
     pending_quotations = Document.objects.filter(
         document_type='quotation',
-        status='pending',
-        created_by=request.user
+        status='pending'
     ).count()
     
     approved_invoices = Document.objects.filter(
         document_type='invoice',
-        status__in=['approved', 'paid'],
-        created_by=request.user
+        status__in=['approved', 'paid']
     ).count()
     
-    # Recent documents
-    recent_documents = Document.objects.filter(
-        created_by=request.user
-    ).select_related('customer', 'approved_by')[:10]
+    # Recent documents - show all, not just current user's
+    recent_documents = Document.objects.all().select_related(
+        'customer', 'approved_by'
+    ).order_by('-created_at')[:10]
     
-    # Total revenue (approved invoices)
+    # Total revenue (approved invoices) - all users
+    from django.db.models import Sum, F
     total_revenue = Document.objects.filter(
         document_type='invoice',
-        status__in=['approved', 'paid'],
-        created_by=request.user
+        status__in=['approved', 'paid']
     ).aggregate(
-        total=Sum('items__unit_price') * Sum('items__quantity')
+        total=Sum(F('items__unit_price') * F('items__quantity'))
     )['total'] or 0
     
     context = {
@@ -126,13 +122,14 @@ def dashboard(request):
 
 
 class QuotationListView(LoginRequiredMixin, ListView):
-    """List all quotations"""
+    """List all quotations - for all users"""
     model = Document
     template_name = 'invoices/quotation_list.html'
     context_object_name = 'quotations'
     paginate_by = 20
     
     def get_queryset(self):
+        # REMOVED created_by filter - show all quotations
         queryset = Document.objects.filter(
             document_type='quotation'
         ).select_related(
@@ -163,6 +160,7 @@ class QuotationListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        # Stats for all quotations, not just current user
         all_quotations = Document.objects.filter(document_type='quotation')
         context['stats'] = {
             'total': all_quotations.count(),
@@ -179,13 +177,14 @@ class QuotationListView(LoginRequiredMixin, ListView):
 
 
 class InvoiceListView(LoginRequiredMixin, ListView):
-    """List all invoices"""
+    """List all invoices - for all users"""
     model = Document
     template_name = 'invoices/invoice_list.html'
     context_object_name = 'invoices'
     paginate_by = 20
     
     def get_queryset(self):
+        # REMOVED created_by filter - show all invoices
         queryset = Document.objects.filter(
             document_type='invoice'
         ).select_related(
@@ -217,6 +216,7 @@ class InvoiceListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        # Stats for all invoices, not just current user
         all_invoices = Document.objects.filter(document_type='invoice')
         context['stats'] = {
             'total': all_invoices.count(),
@@ -230,7 +230,6 @@ class InvoiceListView(LoginRequiredMixin, ListView):
         context['current_search'] = self.request.GET.get('search', '')
         
         return context
-
 
 # ============================================================================
 # DOCUMENT DETAIL VIEWS
@@ -253,7 +252,6 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
 # DOCUMENT CREATE/EDIT VIEWS
 # ============================================================================
 
-@login_required
 @login_required
 def document_create(request, document_type='quotation'):
     """Create new quotation or invoice"""
@@ -337,7 +335,9 @@ def document_create(request, document_type='quotation'):
         'action': 'Create',
         'document_type': document_type,
         'doc_name': doc_name,
+        'is_edit': False,  # Flag to tell template we're creating
     })
+
 
 @login_required
 def document_edit(request, pk):
@@ -356,11 +356,15 @@ def document_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
-                    document = form.save()
+                    # Don't change document_type on edit
+                    doc = form.save(commit=False)
+                    doc.document_type = document.document_type  # Keep original type
+                    doc.save()
                     
                     # Save items with correct numbering
                     items = formset.save(commit=False)
                     for idx, item in enumerate(items, start=1):
+                        item.document = doc
                         item.item_number = idx
                         item.save()
                     
@@ -370,22 +374,28 @@ def document_edit(request, pk):
                     
                     # Create history entry
                     DocumentHistory.objects.create(
-                        document=document,
+                        document=doc,
                         action='updated',
                         user=request.user,
                         details='Document updated'
                     )
                     
                     messages.success(request, 'Document updated successfully!')
-                    return redirect('document_detail', pk=document.pk)
+                    return redirect('document_detail', pk=doc.pk)
                     
             except Exception as e:
+                import traceback
+                print(f"Error updating document: {str(e)}")
+                print(traceback.format_exc())
                 messages.error(request, f'Error updating document: {str(e)}')
         else:
+            print(f"Form errors: {form.errors}")
+            print(f"Formset errors: {formset.errors}")
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
     else:
+        # GET request - load existing data
         form = DocumentForm(instance=document)
         formset = DocumentItemFormSet(instance=document)
     
@@ -394,10 +404,10 @@ def document_edit(request, pk):
         'formset': formset,
         'document': document,
         'action': 'Edit',
-        'document_type': document.document_type,
+        'document_type': document.document_type,  # Important! Pass this for template conditionals
         'doc_name': document.get_document_type_display(),
+        'is_edit': True,  # Flag to tell template we're editing
     })
-
 
 # ============================================================================
 # DOCUMENT ACTIONS
@@ -558,25 +568,80 @@ def document_preview(request, pk):
 
 @login_required
 def document_pdf(request, pk):
-    """Generate PDF (placeholder - implement with WeasyPrint)"""
+    """Generate and download PDF directly using xhtml2pdf"""
+    from django.template.loader import render_to_string
+    from django.http import HttpResponse
+    from django.conf import settings
+    import os
+    
     document = get_object_or_404(Document, pk=pk)
     company = Company.get_company()
     
-    # Render HTML
-    html = render_to_string('invoices/document_pdf.html', {
-        'document': document,
-        'company': company,
-    })
-    
-    # TODO: Implement PDF generation with WeasyPrint
-    # from weasyprint import HTML
-    # pdf_file = HTML(string=html).write_pdf()
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{document.reference}.pdf"'
-    
-    # For now, return HTML
-    return HttpResponse(html)
+    try:
+        from xhtml2pdf import pisa
+        from io import BytesIO
+        
+        # Get absolute paths for images (xhtml2pdf needs file:// paths on Windows)
+        static_root = settings.STATICFILES_DIRS[0] if settings.STATICFILES_DIRS else settings.STATIC_ROOT
+        
+        # Build absolute file paths for images
+        logo_path = os.path.join(static_root, 'invoices', 'images', 'logo.png')
+        stamp_path = os.path.join(static_root, 'invoices', 'images', 'company-stamp.png')
+        
+        # Convert to file:// URI format for xhtml2pdf on Windows
+        logo_uri = f"file:///{logo_path.replace(os.sep, '/')}"
+        stamp_uri = f"file:///{stamp_path.replace(os.sep, '/')}"
+        
+        # Render the PDF-specific template
+        html_string = render_to_string('invoices/document_pdf.html', {
+            'document': document,
+            'company': company,
+            'logo_path': logo_uri,
+            'stamp_path': stamp_uri,
+        })
+        
+        # Create PDF
+        result = BytesIO()
+        
+        # Link callback to handle static files
+        def link_callback(uri, rel):
+            """Convert URIs to absolute system paths for xhtml2pdf"""
+            if uri.startswith('file:///'):
+                return uri.replace('file:///', '')
+            
+            # Handle static files
+            if uri.startswith(settings.STATIC_URL):
+                path = uri.replace(settings.STATIC_URL, '')
+                return os.path.join(static_root, path)
+            
+            return uri
+        
+        pdf = pisa.pisaDocument(
+            BytesIO(html_string.encode("UTF-8")), 
+            result,
+            encoding='UTF-8',
+            link_callback=link_callback
+        )
+        
+        if not pdf.err:
+            response = HttpResponse(result.getvalue(), content_type='application/pdf')
+            filename = f"{document.reference}-{document.customer_name}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        else:
+            messages.error(request, 'Error generating PDF. Please try the print option.')
+            return redirect('document_preview', pk=pk)
+            
+    except ImportError:
+        messages.info(request, 'PDF library not installed. Use the Print button to save as PDF.')
+        return redirect('document_preview', pk=pk)
+    except Exception as e:
+        import traceback
+        print(f"PDF Error: {str(e)}")
+        traceback.print_exc()
+        messages.error(request, f'Error: {str(e)}')
+        return redirect('document_preview', pk=pk)
+
 
 
 # ============================================================================
